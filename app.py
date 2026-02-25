@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 import streamlit as st
-
-# Fake product catalog (No structured eco field!)
 products = [
     {
         "id": 1,
