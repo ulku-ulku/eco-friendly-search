@@ -1,63 +1,57 @@
+import re
 import streamlit as st
-products = [
-    {
-        "id": 1,
-        "name": "Bamboo Coffee Table",
-        "price": 120,
-        "description": "Modern coffee table made from sustainable bamboo material and non-toxic finish."
-    },
-    {
-        "id": 2,
-        "name": "Classic Leather Sofa",
-        "price": 850,
-        "description": "Premium Italian leather sofa with solid wood frame."
-    },
-    {
-        "id": 3,
-        "name": "Recycled Wood Bookshelf",
-        "price": 300,
-        "description": "Bookshelf made from recycled wood and eco-friendly varnish."
-    },
-    {
-        "id": 4,
-        "name": "Plastic Outdoor Chair",
-        "price": 60,
-        "description": "Durable plastic chair suitable for outdoor use."
-    }
+
+st.set_page_config(page_title="Eco Intent Search", page_icon="🌿")
+
+# Fake mini catalog (NO is_eco_friendly field)
+PRODUCTS = [
+    {"id": 1, "name": "Bamboo Coffee Table", "price": 120,
+     "description": "Modern coffee table made from sustainable bamboo and non-toxic finish."},
+    {"id": 2, "name": "Classic Leather Sofa", "price": 850,
+     "description": "Premium leather sofa with solid wood frame."},
+    {"id": 3, "name": "Recycled Wood Shelf", "price": 300,
+     "description": "Shelf made from recycled wood and eco-friendly varnish."},
+    {"id": 4, "name": "Organic Paint Cabinet", "price": 420,
+     "description": "Cabinet coated with organic paint and low-VOC materials."},
+    {"id": 5, "name": "Plastic Outdoor Chair", "price": 60,
+     "description": "Durable plastic chair for outdoor use."},
 ]
 
-eco_keywords = [
-    "eco", "sustainable", "recycled",
-    "organic", "non-toxic", "bamboo"
+ECO_KEYWORDS = [
+    "eco", "eco-friendly", "sustainable", "recycled",
+    "non-toxic", "organic", "bamboo", "low-voc",
+    "çevre dostu", "sürdürülebilir", "geri dönüştürülmüş"
 ]
 
-def is_eco_query(user_input):
-    user_input = user_input.lower()
-    return any(word in user_input for word in eco_keywords)
+def is_eco_text(text):
+    text = text.lower()
+    return any(word in text for word in ECO_KEYWORDS)
 
-def is_eco_product(description):
-    description = description.lower()
-    return any(word in description for word in eco_keywords)
+st.title("🌿 Free Text Search / Intent Extraction Demo")
 
-st.title("AI Furniture Assistant")
-
-query = st.text_input("Ne arıyorsunuz? (örn: çevre dostu ürünler)")
+query = st.text_input("Ne arıyorsunuz? (ör: çevre dostu, bamboo, sustainable)")
 
 if query:
-    if is_eco_query(query):
-        st.subheader("🌱 Çevre Dostu Ürünler")
-        found = False
-        for product in products:
-            if is_eco_product(product["description"]):
-                st.write(f"**{product['name']}** - ${product['price']}")
-                st.write(product["description"])
-                st.write("---")
-                found = True
-        if not found:
-            st.write("Çevre dostu ürün bulunamadı.")
+    query_lower = query.lower()
+
+    # Eco intent detection
+    eco_intent = any(word in query_lower for word in ECO_KEYWORDS)
+
+    if eco_intent:
+        st.subheader("✅ Eco Intent Detected")
+        results = [p for p in PRODUCTS if is_eco_text(p["description"])]
     else:
-        st.subheader("Tüm Ürünler")
-        for product in products:
-            st.write(f"**{product['name']}** - ${product['price']}")
-            st.write(product["description"])
+        st.subheader("🔎 General Search")
+        results = [
+            p for p in PRODUCTS
+            if query_lower in p["name"].lower()
+            or query_lower in p["description"].lower()
+        ]
+
+    if results:
+        for p in results:
+            st.markdown(f"### {p['name']} - ${p['price']}")
+            st.write(p["description"])
             st.write("---")
+    else:
+        st.warning("Sonuç bulunamadı.")
